@@ -50,3 +50,21 @@ resource "vcd_network_routed_v2" "network_routed_v2" {
     }
   }
 }
+
+resource "vcd_nsxt_network_dhcp" "pool" {
+  count               = var.dhcp_pool == null ? 0 : 1
+  org                 = var.vdc_org_name
+  org_network_id      = vcd_network_routed_v2.network_routed_v2.id
+  mode                = var.dhcp_pool.dhcp_mode
+  listener_ip_address = var.dhcp_pool.dhcp_mode == "NETWORK" ? var.dhcp_pool.listener_ip_address : null
+  lease_time          = var.dhcp_pool.lease_time
+  dns_servers         = var.dhcp_pool.dhcp_mode == "RELAY" ? null : var.dhcp_pool.dns_servers
+
+  dynamic "pool" {
+    for_each = var.dhcp_pool.dhcp_mode == "RELAY" ? [] : var.dhcp_pool.pool_ranges
+    content {
+      start_address = pool.value.start_address
+      end_address   = pool.value.end_address
+    }
+  }
+}

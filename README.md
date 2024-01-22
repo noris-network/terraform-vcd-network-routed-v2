@@ -25,6 +25,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [vcd_network_routed_v2.network_routed_v2](https://registry.terraform.io/providers/vmware/vcd/latest/docs/resources/network_routed_v2) | resource |
+| [vcd_nsxt_network_dhcp.pool](https://registry.terraform.io/providers/vmware/vcd/latest/docs/resources/nsxt_network_dhcp) | resource |
 | [vcd_nsxt_edgegateway.nsxt_edgegateway](https://registry.terraform.io/providers/vmware/vcd/latest/docs/data-sources/nsxt_edgegateway) | data source |
 | [vcd_vdc_group.vdc_group](https://registry.terraform.io/providers/vmware/vcd/latest/docs/data-sources/vdc_group) | data source |
 
@@ -39,6 +40,7 @@ No modules.
 | <a name="input_vdc_group_name"></a> [vdc\_group\_name](#input\_vdc\_group\_name) | The name of the VDC group. | `string` | n/a | yes |
 | <a name="input_vdc_org_name"></a> [vdc\_org\_name](#input\_vdc\_org\_name) | The name of the organization to use. | `string` | n/a | yes |
 | <a name="input_description"></a> [description](#input\_description) | An optional description of the network. | `string` | `null` | no |
+| <a name="input_dhcp_pool"></a> [dhcp\_pool](#input\_dhcp\_pool) | IP ranges to configure DHCP for. | <pre>object({<br>    listener_ip_address = optional(string)<br>    pool_ranges         = optional(list(map(string)), [{start_address = "192.168.1.150", end_address = "192.168.1.199"}])<br>    dns_servers         = optional(list(string))<br>    dhcp_mode           = optional(string, "EDGE")<br>    lease_time          = optional(number, 4294967295)<br>  })</pre> | `null` | no |
 | <a name="input_dns1"></a> [dns1](#input\_dns1) | First DNS server to use. | `string` | `null` | no |
 | <a name="input_dns2"></a> [dns2](#input\_dns2) | Second DNS server to use. | `string` | `null` | no |
 | <a name="input_dns_suffix"></a> [dns\_suffix](#input\_dns\_suffix) | A FQDN for the virtual machines on this network. | `string` | `null` | no |
@@ -62,7 +64,7 @@ No modules.
 
 ```
 module "org_network" {
-  source               = "git::https://github.com/noris-network/terraform-vcd-network-routed-v2?ref=1.0.0"
+  source               = "git::https://github.com/noris-network/terraform-vcd-network-routed-v2?ref=1.1.0"
   name                 = "myNet"
   vdc_org_name         = "myORG"
   vdc_edgegateway_name = "T1-myORG"
@@ -72,8 +74,26 @@ module "org_network" {
   static_ip_pool       = [
     {
       start_address = "192.168.0.100"
-      end_address   = "192.168.0.150"
+      end_address   = "192.168.0.149"
     }
   ]
+  dhcp_pool =  {
+    pool_ranges = [
+      {
+        start_address = "192.168.0.150"
+        end_address   = "192.168.0.199"
+      }
+    ]
+    listener_ip_address = "192.168.0.1"
+    dns_servers = ["8.8.8.8", "8.8.8.8"]
+    dhcp_mode   = "EDGE"
+    lease_time  = 86400
+  }
 }
 ```
+
+## Changelog
+
+  * `v1.1.0`  - Add posibility to add DHCP scopes to Org Network
+  * `v1.0.0`  - Initial release
+  

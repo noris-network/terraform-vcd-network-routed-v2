@@ -93,3 +93,15 @@ variable "secondary_static_ip_pool" {
   type        = list(map(string))
   default     = []
 }
+
+variable "dhcp_pool" {
+  description = "IP ranges to configure DHCP for."
+  type = object({
+    listener_ip_address = optional(string)
+    pool_ranges         = optional(list(map(string)), [{ start_address = "192.168.0.150", end_address = "192.168.0.199" }])
+    dns_servers         = optional(list(string))
+    dhcp_mode           = optional(string, "EDGE")
+    lease_time          = optional(number, 4294967295)
+  })
+  default = null
+}
